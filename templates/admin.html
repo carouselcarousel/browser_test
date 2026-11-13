@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — fingerprint lab</title>
+<style>
+  body { margin:0; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif; background:#0f1115; color:#e8ecf3; }
+  header { padding:16px 22px; border-bottom:1px solid #252a34; display:flex; align-items:center; gap:16px; }
+  header h1 { font-size:18px; margin:0; }
+  .wrap { max-width:1200px; margin:0 auto; padding:20px 18px 60px; }
+  .panel { background:#191c23; border:1px solid #252a34; border-radius:12px; padding:16px 18px; margin-bottom:20px; }
+  .panel h2 { margin:0 0 12px; font-size:15px; color:#aeb8d0; }
+  form.up { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  form.up input[type=file] { color:#aeb8d0; }
+  .btn { background:#4b8bf4; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-size:14px; cursor:pointer; }
+  .thumb { max-height:90px; border-radius:8px; border:1px solid #252a34; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid #252a34; vertical-align:top; }
+  th { color:#8b93a7; font-weight:600; position:sticky; top:0; background:#191c23; }
+  td.mono, .mono { font-family:ui-monospace,Menlo,Consolas,monospace; }
+  .hash { color:#7fd1a6; }
+  .creep { color:#f4b74b; }
+  a { color:#4b8bf4; }
+  .muted { color:#8b93a7; }
+</style>
+</head>
+<body>
+<header><h1>Fingerprint Lab — Admin</h1><span class="muted">{{ count }} visit(s) shown (latest 500)</span></header>
+<div class="wrap">
+  <div class="panel">
+    <h2>Image shown on the public page</h2>
+    <form class="up" method="post" action="{{ url_for('admin_upload') }}" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" required>
+      <button class="btn" type="submit">Upload &amp; show</button>
+      {% if image_url %}<img class="thumb" src="{{ image_url }}" alt="current">{% else %}<span class="muted">none set</span>{% endif %}
+    </form>
+  </div>
+  <div class="panel">
+    <h2>Collected visits</h2>
+    <table>
+      <thead><tr>
+        <th>Time (UTC)</th><th>IP</th><th>Custom FP</th><th>CreepJS FP</th><th>CreepJS fuzzy</th><th>Lies</th><th>User agent</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="mono">{{ r['ts']|datetime }}</td>
+          <td class="mono">{{ r['ip'] }}</td>
+          <td class="mono hash">{{ (r['custom_hash'] or '')[:16] }}</td>
+          <td class="mono creep">{{ (r['creep_hash'] or '')[:16] }}</td>
+          <td class="mono">{{ (r['creep_fuzzy'] or '')[:16] }}</td>
+          <td class="mono">{{ (r['creep_lies'] or '')[:40] }}</td>
+          <td>{{ (r['user_agent'] or '')[:70] }}</td>
+          <td><a href="{{ url_for('admin_visit', visit_id=r['id']) }}" target="_blank">json</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="muted">No visits recorded yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

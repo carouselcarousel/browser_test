@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: creepjs-lab
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    # SQLite lives on a persistent disk so collected data survives restarts/redeploys.
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_PATH
+        value: /var/data/fingerprints.db
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+      - key: PYTHON_VERSION
+        value: "3.12.7"
